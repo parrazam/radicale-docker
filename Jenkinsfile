@@ -1,54 +1,78 @@
 pipeline {
-  agent any 
-  parameters {
-    string(name: 'version', description: 'Version from base image')
-  }
+  agent any
   environment {
     SOURCE = "tomsquest/docker-radicale"
     TARGET = "parrazam/radicale-with-infcloud"
     MASTER_BRANCH = "master"
+    RELEASE_BRANCH = "release/*"
+    VERSION = ''
   }
   options {
     skipStagesAfterUnstable()
   }
   stages {
+    stage('Configure pipeline for branch type') {
+      steps {
+        script {
+          if (env.BRANCH_NAME.startsWith('release/')) {
+            VERSION = (env.BRANCH_NAME).tokenize('/')[1]
+          } else if (env.BRANCH_NAME.equals('master')) {
+            VERSION = ''
+          } else {
+            VERSION = '-SNAPSHOT'
+          }
+        }
+      }
+    }
     stage('Delete older images') {
       steps {
         echo "Removing existing images in local..."
         sh "docker images | grep ${TARGET} | tr -s ' ' | cut -d ' ' -f 2 | xargs -I {} docker rmi ${TARGET}:{}"
       }
     }
-    stage('Build AMD64 image') {
-      steps {
-        echo "Building ${TARGET}:amd64${params.version} image..."
-        sh "docker pull ${SOURCE}:amd64${params.version}"
-        sh "docker buildx build -t ${TARGET}:amd64${params.version} --platform linux/amd64 ."
-      }
-    }
-    stage('Build 386 image') {
-      steps {
-        echo "Building ${TARGET}:386${params.version} image..."
-        sh "docker pull ${SOURCE}:386${params.version}"
-        sh "docker buildx build -t ${TARGET}:386${params.version} --platform linux/386 ."
-      }
-    }
-    stage('Build ARM image') {
-      steps {
-        echo "Building ${TARGET}:arm${params.version} image..."
-        sh "docker pull ${SOURCE}:arm${params.version}"
-        sh "docker buildx build -t ${TARGET}:arm${params.version} --platform linux/arm/v7 ."
-      }
-    }
-    stage('Build ARM64 image') {
-      steps {
-        echo "Building ${TARGET}:arm64${params.version} image..."
-        sh "docker pull ${SOURCE}:arm64${params.version}"
-        sh "docker buildx build -t ${TARGET}:arm64${params.version} --platform linux/arm64 ."
+    stage("Build image") {
+      matrix {
+        axes {
+            axis {
+                name 'PLATFORM'
+                values 'linux/amd64', 'linux/386', 'linux/arm64', 'linux/arm/v7'
+            }
+        }
+        stages {
+          stage('Build by platform') {
+            options {
+              lock( 'synchronous-matrix' )
+            }
+            steps {
+              echo "Building for ${PLATFORM}"
+              script {
+                stage("Build ${PLATFORM}") {
+                  script {
+                    SOURCE_IMAGE = SOURCE+':'+PLATFORM.tokenize('/')[1]
+                    TARGET_IMAGE = TARGET+':'+PLATFORM.tokenize('/')[1]
+                    if (env.BRANCH_NAME.startsWith('release/')) {
+                      SOURCE_IMAGE += "." + VERSION
+                      TARGET_IMAGE += "." + VERSION
+                    } else {
+                      TARGET_IMAGE += VERSION
+                    }
+                  }
+                  echo "Building ${TARGET_IMAGE} image..."
+                  sh "docker pull ${SOURCE_IMAGE}"
+                  sh "docker buildx build -t ${TARGET_IMAGE} --platform ${PLATFORM} ."
+                }
+              }
+            }
+          }
+        }
       }
     }
     stage('Publish images to Docker Hub') {
       when {
-        branch "${MASTER_BRANCH}"
+        anyOf {
+          branch "${MASTER_BRANCH}"
+          branch "${RELEASE_BRANCH}"
+        }
       }
       steps {
         withCredentials([usernamePassword(credentialsId: 'dockerHub', passwordVariable: 'dockerHubPassword', usernameVariable: 'dockerHubUser')]) {
@@ -59,20 +83,34 @@ pipeline {
     }
     stage('Tagging with common version') {
       environment {
-        GROUPED_VERSION = """${sh(
-                returnStdout: true,
-                script: "if [ \"${params.version}\" != \"\" ]; then echo '${params.version}'; else echo 'latest'; fi"
-            )}"""
+        GROUPED_VERSION = "${VERSION}"
       }
       when {
-        branch "${MASTER_BRANCH}"
+        anyOf {
+          branch "${MASTER_BRANCH}"
+          branch "${RELEASE_BRANCH}"
+        }
       }
       steps {
-        sh "docker manifest create ${TARGET}:${GROUPED_VERSION} -a ${TARGET}:amd64${params.version} -a ${TARGET}:386${params.version} -a ${TARGET}:arm${params.version} -a ${TARGET}:arm64${params.version}"
+        script {
+          if (VERSION.equals('')) {
+            GROUPED_VERSION = 'latest'
+          }
+          if (env.BRANCH_NAME.startsWith('release/')) {
+            VERSION = '.' + (env.BRANCH_NAME).tokenize('/')[1]
+          }
+          IMAGES = ''
+          for (ARCH in ['linux/amd64', 'linux/386', 'linux/arm64', 'linux/arm/v7']) {
+            IMAGES += ' -a ' + TARGET + ':' + ARCH.tokenize('/')[1] + VERSION
+          }
+        }
+        echo "${IMAGES}"
+        sh "docker manifest create ${TARGET}:${GROUPED_VERSION} ${IMAGES}"
         sh "docker manifest push ${TARGET}:${GROUPED_VERSION}"
       }
     }
   }
+    
   post {
     always {
       echo "Removing existing images in local..."
