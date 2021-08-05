@@ -59,7 +59,10 @@ pipeline {
     }
     stage('Tagging with common version') {
       environment {
-        GROUPED_VERSION = "latest"
+        GROUPED_VERSION = """${sh(
+                returnStdout: true,
+                script: "if [ \"${params.version}\" != \"\" ]; then echo '${params.version}'; else echo 'latest'; fi"
+            )}"""
       }
       when {
         branch "${MASTER_BRANCH}"
