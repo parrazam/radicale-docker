@@ -35,7 +35,7 @@ pipeline {
         axes {
             axis {
                 name 'PLATFORM'
-                values 'linux/amd64', 'linux/386', 'linux/arm64', 'linux/arm/v7'
+                values 'linux/amd64', 'linux/386', 'linux/arm64', 'linux/arm'
             }
         }
         stages {
@@ -59,7 +59,7 @@ pipeline {
                   }
                   echo "Building ${TARGET_IMAGE} image..."
                   sh "docker pull ${SOURCE_IMAGE}"
-                  sh "docker buildx build -t ${TARGET_IMAGE} --platform ${PLATFORM} ."
+                  sh "docker buildx build -t ${TARGET_IMAGE} --platform ${PLATFORM} --build-arg VERSION=${PLATFORM.tokenize('/')[1]} ."
                 }
               }
             }
@@ -100,7 +100,7 @@ pipeline {
             VERSION = '.' + (env.BRANCH_NAME).tokenize('/')[1]
           }
           IMAGES = ''
-          for (ARCH in ['linux/amd64', 'linux/386', 'linux/arm64', 'linux/arm/v7']) {
+          for (ARCH in PLATFORM) {
             IMAGES += ' -a ' + TARGET + ':' + ARCH.tokenize('/')[1] + VERSION
           }
         }
