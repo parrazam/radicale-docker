@@ -35,7 +35,7 @@ pipeline {
         axes {
             axis {
                 name 'PLATFORM'
-                values 'linux/amd64'
+                values 'linux/amd64', 'linux/arm', 'linux/386'
             }
         }
         stages {
