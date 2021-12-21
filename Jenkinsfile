@@ -100,7 +100,7 @@ pipeline {
             VERSION = '.' + (env.BRANCH_NAME).tokenize('/')[1]
           }
           IMAGES = ''
-          for (ARCH in PLATFORM) {
+          for (ARCH in ['linux/amd64', 'linux/arm64', 'linux/arm', 'linux/386']) {
             IMAGES += ' -a ' + TARGET + ':' + ARCH.tokenize('/')[1] + VERSION
           }
         }
