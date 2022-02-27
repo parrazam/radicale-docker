@@ -17,7 +17,7 @@ pipeline {
           if (env.BRANCH_NAME.startsWith('release/')) {
             VERSION = (env.BRANCH_NAME).tokenize('/')[1]
           } else if (env.BRANCH_NAME.equals('master')) {
-            VERSION = ''
+            VERSION = 'latest'
           } else {
             VERSION = 'unstable'
           }
