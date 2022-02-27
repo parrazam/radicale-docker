@@ -35,7 +35,7 @@ pipeline {
         axes {
             axis {
                 name 'PLATFORM'
-                values 'linux/amd64', 'linux/arm64', 'linux/arm', 'linux/386'
+                values 'linux/amd64', 'linux/arm64', 'linux/arm'
             }
         }
         stages {
@@ -100,7 +100,7 @@ pipeline {
             VERSION = '.' + (env.BRANCH_NAME).tokenize('/')[1]
           }
           IMAGES = ''
-          for (ARCH in ['linux/amd64', 'linux/arm64', 'linux/arm', 'linux/386']) {
+          for (ARCH in ['linux/amd64', 'linux/arm64', 'linux/arm']) {
             IMAGES += ' -a ' + TARGET + ':' + ARCH.tokenize('/')[1] + VERSION
           }
         }
