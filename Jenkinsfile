@@ -49,13 +49,10 @@ pipeline {
                 stage("Build ${PLATFORM}") {
                   script {
                     SOURCE_IMAGE = SOURCE
-                    TARGET_IMAGE = TARGET
                     if (env.BRANCH_NAME.startsWith('release/')) {
                       SOURCE_IMAGE += ":" + VERSION
-                      TARGET_IMAGE += ":" + VERSION
-                    } else {
-                      TARGET_IMAGE += ":" + VERSION
                     }
+                    TARGET_IMAGE = TARGET + ":" + VERSION
                   }
                   echo "Building ${TARGET_IMAGE} image..."
                   sh "docker pull ${SOURCE_IMAGE}"
@@ -64,49 +61,21 @@ pipeline {
               }
             }
           }
-        }
-      }
-    }
-    stage('Publish images to Docker Hub') {
-      when {
-        anyOf {
-          branch "${MASTER_BRANCH}"
-          branch "${RELEASE_BRANCH}"
-        }
-      }
-      steps {
-        withCredentials([usernamePassword(credentialsId: 'dockerHub', passwordVariable: 'dockerHubPassword', usernameVariable: 'dockerHubUser')]) {
-          sh "echo ${env.dockerHubPassword} | docker login -u ${env.dockerHubUser} --password-stdin"
-          sh "docker image push --all-tags ${TARGET}"
-        }
-      }
-    }
-    stage('Tagging with common version') {
-      environment {
-        GROUPED_VERSION = "${VERSION}"
-      }
-      when {
-        anyOf {
-          branch "${MASTER_BRANCH}"
-          branch "${RELEASE_BRANCH}"
-        }
-      }
-      steps {
-        script {
-          if (VERSION.equals('')) {
-            GROUPED_VERSION = 'latest'
-          }
-          if (env.BRANCH_NAME.startsWith('release/')) {
-            VERSION = '.' + (env.BRANCH_NAME).tokenize('/')[1]
-          }
-          IMAGES = ''
-          for (ARCH in ['linux/amd64', 'linux/arm64', 'linux/arm']) {
-            IMAGES += ' -a ' + TARGET + ':' + ARCH.tokenize('/')[1] + VERSION
+          stage('Publish images to Docker Hub') {
+            when {
+              anyOf {
+                branch "${MASTER_BRANCH}"
+                branch "${RELEASE_BRANCH}"
+              }
+            }
+            steps {
+              withCredentials([usernamePassword(credentialsId: 'dockerHub', passwordVariable: 'dockerHubPassword', usernameVariable: 'dockerHubUser')]) {
+                sh "echo ${env.dockerHubPassword} | docker login -u ${env.dockerHubUser} --password-stdin"
+                sh "docker image push --all-tags ${TARGET}"
+              }
+            }
           }
         }
-        echo "${IMAGES}"
-        sh "docker manifest create ${TARGET}:${GROUPED_VERSION} ${IMAGES}"
-        sh "docker manifest push ${TARGET}:${GROUPED_VERSION}"
       }
     }
   }
