@@ -17,7 +17,7 @@ pipeline {
           if (env.BRANCH_NAME.startsWith('release/')) {
             VERSION = (env.BRANCH_NAME).tokenize('/')[1]
           } else if (env.BRANCH_NAME.equals('master')) {
-            VERSION = ''
+            VERSION = 'latest'
           } else {
             VERSION = 'unstable'
           }
@@ -59,7 +59,7 @@ pipeline {
                   }
                   echo "Building ${TARGET_IMAGE} image..."
                   sh "docker pull ${SOURCE_IMAGE}"
-                  sh "docker buildx build -t ${TARGET_IMAGE} --platform ${PLATFORM} --build-arg VERSION=${PLATFORM.tokenize('/')[1]} ."
+                  sh "docker buildx build -t ${TARGET_IMAGE} --platform ${PLATFORM} --build-arg VERSION=${VERSION} ."
                 }
               }
             }
