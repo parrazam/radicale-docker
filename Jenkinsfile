@@ -19,7 +19,7 @@ pipeline {
           } else if (env.BRANCH_NAME.equals('master')) {
             VERSION = ''
           } else {
-            VERSION = '-SNAPSHOT'
+            VERSION = 'unstable'
           }
         }
       }
@@ -54,7 +54,7 @@ pipeline {
                       SOURCE_IMAGE += ":" + VERSION
                       TARGET_IMAGE += ":" + VERSION
                     } else {
-                      TARGET_IMAGE += VERSION
+                      TARGET_IMAGE += ":" + VERSION
                     }
                   }
                   echo "Building ${TARGET_IMAGE} image..."
