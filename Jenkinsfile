@@ -35,7 +35,7 @@ pipeline {
         axes {
             axis {
                 name 'PLATFORM'
-                values 'linux/amd64', 'linux/arm64', 'linux/arm', 'linux/386'
+                values 'linux/amd64', 'linux/arm64', 'linux/arm'
             }
         }
         stages {
@@ -48,10 +48,10 @@ pipeline {
               script {
                 stage("Build ${PLATFORM}") {
                   script {
-                    SOURCE_IMAGE = SOURCE+':'+PLATFORM.tokenize('/')[1]
+                    SOURCE_IMAGE = SOURCE
                     TARGET_IMAGE = TARGET+':'+PLATFORM.tokenize('/')[1]
                     if (env.BRANCH_NAME.startsWith('release/')) {
-                      SOURCE_IMAGE += "." + VERSION
+                      SOURCE_IMAGE += ":" + VERSION
                       TARGET_IMAGE += "." + VERSION
                     } else {
                       TARGET_IMAGE += VERSION
@@ -68,20 +68,6 @@ pipeline {
       }
     }
     stage('Publish images to Docker Hub') {
-      when {
-        anyOf {
-          branch "${MASTER_BRANCH}"
-          branch "${RELEASE_BRANCH}"
-        }
-      }
-      steps {
-        withCredentials([usernamePassword(credentialsId: 'dockerHub', passwordVariable: 'dockerHubPassword', usernameVariable: 'dockerHubUser')]) {
-          sh "echo ${env.dockerHubPassword} | docker login -u ${env.dockerHubUser} --password-stdin"
-          sh "docker image push --all-tags ${TARGET}"
-        }
-      }
-    }
-    stage('Tagging with common version') {
       environment {
         GROUPED_VERSION = "${VERSION}"
       }
@@ -100,13 +86,16 @@ pipeline {
             VERSION = '.' + (env.BRANCH_NAME).tokenize('/')[1]
           }
           IMAGES = ''
-          for (ARCH in ['linux/amd64', 'linux/arm64', 'linux/arm', 'linux/386']) {
+          for (ARCH in ['linux/amd64', 'linux/arm64', 'linux/arm']) {
             IMAGES += ' -a ' + TARGET + ':' + ARCH.tokenize('/')[1] + VERSION
           }
         }
         echo "${IMAGES}"
-        sh "docker manifest create ${TARGET}:${GROUPED_VERSION} ${IMAGES}"
-        sh "docker manifest push ${TARGET}:${GROUPED_VERSION}"
+        withCredentials([usernamePassword(credentialsId: 'dockerHub', passwordVariable: 'dockerHubPassword', usernameVariable: 'dockerHubUser')]) {
+          sh "echo ${env.dockerHubPassword} | docker login -u ${env.dockerHubUser} --password-stdin"
+          sh "docker manifest create ${TARGET}:${GROUPED_VERSION} ${IMAGES}"
+          sh "docker manifest push ${TARGET}:${GROUPED_VERSION}"
+        }
       }
     }
   }
