@@ -49,10 +49,10 @@ pipeline {
                 stage("Build ${PLATFORM}") {
                   script {
                     SOURCE_IMAGE = SOURCE
-                    TARGET_IMAGE = TARGET+':'+PLATFORM.tokenize('/')[1]
+                    TARGET_IMAGE = TARGET
                     if (env.BRANCH_NAME.startsWith('release/')) {
                       SOURCE_IMAGE += ":" + VERSION
-                      TARGET_IMAGE += "." + VERSION
+                      TARGET_IMAGE += ":" + VERSION
                     } else {
                       TARGET_IMAGE += VERSION
                     }
