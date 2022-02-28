@@ -8,4 +8,4 @@
 This repo creates a Docker image based on [tomsquest image](https://github.com/tomsquest/docker-radicale) and adds support to **InfCloud**.
 Images will be automatically deployed to [Docker Registry](https://hub.docker.com/repository/docker/parrazam/radicale-with-infcloud)
 
-Images are available for `386`, `amd64`, `armv7` and `arm64` architectures.
+Images are available for `amd64`, `armv7` and `arm64` architectures.
