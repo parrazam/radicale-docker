@@ -3,7 +3,6 @@ name: Build and Publish
 on:
   # run it on push to the default repository branch
   push:
-    branches: [master, develop]
     # Publish semver tags as releases.
     tags: [ 'v*.*.*' ]
   # run it during pull request
@@ -33,15 +32,13 @@ jobs:
     # steps to perform in job
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       # Install the cosign tool except on PR
       # https://github.com/sigstore/cosign-installer
       - name: Install cosign
         if: github.event_name != 'pull_request'
-        uses: sigstore/cosign-installer@1e95c1de343b5b0c23352d6417ee3e48d5bcd422
-        with:
-          cosign-release: 'v1.4.0'
+        uses: sigstore/cosign-installer@main
 
       - name: Set up QEMU
         id: qemu
@@ -76,11 +73,14 @@ jobs:
       # https://github.com/docker/metadata-action
       - name: Extract Docker metadata
         id: meta
-        uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
+        uses: docker/metadata-action@v3
         with:
           images: |
             ${{ env.IMAGE_NAME }}
             ${{ env.GH_REPO }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
       
       - name: Build image and push to Docker Hub and GitHub Container Registry
         id: build-and-push
