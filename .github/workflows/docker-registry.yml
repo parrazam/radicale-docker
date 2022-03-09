@@ -3,6 +3,7 @@ name: Build and Publish
 on:
   # run it on push to the default repository branch
   push:
+    branches: develop
     # Publish semver tags as releases.
     tags: [ 'v*.*.*' ]
   # run it during pull request
@@ -81,6 +82,11 @@ jobs:
           tags: |
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
+          labels: |
+            maintainer=parrazam
+            org.opencontainers.image.title=Radicale with InfCloud
+            org.opencontainers.image.description=Radicale with InfCloud interface included
+            org.opencontainers.image.vendor=ParraSoft
       
       - name: Build image and push to Docker Hub and GitHub Container Registry
         id: build-and-push
