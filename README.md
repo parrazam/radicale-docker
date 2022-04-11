@@ -1,6 +1,6 @@
 # Radicale Docker
 
-[![Build Status](https://jenkins.parravidales.es/buildStatus/icon?job=Radicale+with+InfCloud%2Fmaster)](https://jenkins.parravidales.es/job/Radicale%20with%20InfCloud/job/master/)
+![Build Status](https://github.com/parrazam/radicale-docker/actions/workflows/build-tag.yml/badge.svg)
 [![Pulls](https://img.shields.io/docker/pulls/parrazam/radicale-with-infcloud.svg)](https://hub.docker.com/r/parrazam/radicale-with-infcloud/)
 [![Stars](https://img.shields.io/docker/stars/parrazam/radicale-with-infcloud.svg)](https://hub.docker.com/r/parrazam/radicale-with-infcloud/)
 [![Docker build](https://img.shields.io/docker/automated/parrazam/radicale-with-infcloud.svg)](https://hub.docker.com/r/parrazam/radicale-with-infcloud/)
