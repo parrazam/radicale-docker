@@ -18,3 +18,13 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
         tag_names: true
+        
+  update-readme:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - uses: meeDamian/sync-readme@v1.0.6
+      with:
+        user: ${{ secrets.DOCKERHUB_USERNAME }}
+        pass: ${{ secrets.DOCKERHUB_TOKEN }}
+        description: true
