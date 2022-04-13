@@ -1,0 +1,17 @@
+name: Publish Docker Hub
+
+on:
+  push:
+    tags: [ '*.*.*.*' ]
+    
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Publish to Docker Hub Registry
+      uses: elgohr/Publish-Docker-Github-Action@v4
+      with:
+        name: parrazam/radicale-docker
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
