@@ -4,11 +4,13 @@ on:
   push:
     branches:
       - develop
+    tags: [ '*.*.*.*' ]
   pull_request:
     branches: [ master ]
 
 env:
   IMAGE_NAME: ${{ github.repository }}
+  IMAGE_NAME_WITH_INFCLOUD: parrazam/radicale-with-infcloud
   PLATFORMS: linux/amd64,linux/arm64,linux/arm/v7
   GH_REPO: ghcr.io
 
@@ -57,6 +59,7 @@ jobs:
           images: |
             ${{ env.GH_REPO }}/${{ env.IMAGE_NAME }}
             ${{ env.IMAGE_NAME }}
+            ${{ env.IMAGE_NAME_WITH_INFCLOUD }}
       
       - name: Build image and push snapshot to GitHub Container Registry
         id: build-and-push
@@ -64,6 +67,6 @@ jobs:
         with:
           context: .
           platforms: ${{ env.PLATFORMS }}
-          push: true
+          push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
