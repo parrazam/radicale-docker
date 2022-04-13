@@ -17,3 +17,4 @@ jobs:
         name: parrazam/radicale-docker
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
+        tag_names: true
