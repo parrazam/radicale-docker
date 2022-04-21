@@ -992,14 +992,11 @@ var globalCompatibility={anniversaryOutputFormat: ['apple']};
 // Example:
 var globalUriHandlerTel='tel:';
 var globalUriHandlerEmail='mailto:';
-var globalUriHandlerUrl='http://';
+var globalUriHandlerUrl='https://';
 var globalUriHandlerProfile={
-	'twitter': 'http://twitter.com/%u',
-	'facebook': 'http://www.facebook.com/%u',
-	'flickr': 'http://www.flickr.com/photos/%u',
-	'linkedin': 'http://www.linkedin.com/in/%u',
-	'myspace': 'http://www.myspace.com/%u',
-	'sinaweibo': 'http://weibo.com/n/%u'
+	'twitter': 'https://twitter.com/%u',
+	'facebook': 'https://www.facebook.com/%u',
+	'linkedin': 'https://www.linkedin.com/in/%u'
 };
 
 
@@ -1009,7 +1006,7 @@ var globalUriHandlerProfile={
 // all supported country codes (defined in common.js):
 // grep -E "'[a-z]{2}':\s+\[" common.js | sed -Ee 's#^\s+|\s+\[\s+# #g'
 // Example:
-var globalDefaultAddressCountry='us';
+var globalDefaultAddressCountry='es';
 
 
 // globalAddressCountryEquivalence
@@ -1051,6 +1048,7 @@ var globalDefaultAddressCountry='us';
 // is used by default.
 // Example:
 var globalAddressCountryEquivalence=[
+        {country: 'es', regex: '^\\W*Spain\\W*$'},
 	{country: 'de', regex: '^\\W*Deutschland\\W*$'},
 	{country: 'sk', regex: '^\\W*Slovensko\\W*$'}
 ];
