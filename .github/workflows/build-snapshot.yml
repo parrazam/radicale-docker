@@ -62,7 +62,7 @@ jobs:
       
       - name: Build image and push snapshot to GitHub Container Registry
         id: build-and-push
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           platforms: ${{ env.PLATFORMS }}
